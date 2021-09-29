@@ -1,0 +1,2005 @@
+<html><head>
+
+
+<meta name="format-detection" content="telephone=no">
+
+
+
+
+
+
+
+<link rel="stylesheet" type="text/css" media="screen" href="/up/faces/system/jquery/development-bundle/themes/base/jquery.ui.all.css">
+<link rel="stylesheet" type="text/css" media="screen" href="/up/faces/system/jquery/css/calendar.css">
+<script type="text/javascript" src="/up/faces/system/jquery/js/jquery-1.8.3.js"></script>
+<script type="text/javascript" src="/up/faces/system/jquery/js/jquery-ui-1.9.2.custom.min.js"></script>
+<script type="text/javascript" src="/up/faces/system/jquery/js/other.js?var=8DvaJjnR2jpGc5Rx5-o7TaA" charset="shift-jis"></script>
+<script type="text/javascript" src="/up/faces/system/jquery/js/i18n/jquery.ui.datepicker-unipa.js"></script>
+<script type="text/javascript" src="/up/faces/system/jquery/js/jquery.maskedinput-1.3.js?var=8DvaJjnR2jpGc5Rx5-o7TaA"></script>
+<script type="text/javascript" src="/up/faces/system/jquery/js/jquery.cookie.js?var=8DvaJjnR2jpGc5Rx5-o7TaA"></script>
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" src="../../up/co/inc/js/layout/cssselecter.js" charset="shift_JIS"></script><link rel="stylesheet" type="text/css" href="../../up/co/inc/css/layout/win_nn.css"><link rel="stylesheet" type="text/css" href="../../up/co/inc/css/layout/win_gecko.css">
+	
+
+
+<link href="../../up/co/inc/css/layout/import.css" rel="stylesheet" type="text/css" charset="shift_JIS">
+<link href="../../up/co/inc/css/jsf.css" rel="stylesheet" type="text/css" charset="shift_JIS">
+
+	
+<link href="../../up/co/inc/css/upCommon.css?var=8DvaJjnR2jpGc5Rx5-o7TaA" rel="stylesheet" type="text/css" charset="shift_JIS">
+
+
+
+
+
+<script type="text/javascript" src="../../up/co/inc/js/contextmenuoff.js" charset="shift_JIS"></script>
+<script type="text/javascript" src="../../up/co/inc/js/upCommon.js" charset="shift_JIS"></script>
+<script type="text/javascript" src="../../up/co/inc/js/menu/menu_act.js" charset="shift_JIS"></script>
+
+<script type="text/javascript">
+
+	// 【Edge対応】リロードイベントで使用するCookieが
+	// ブラウザ上に残っている場合はクリア
+	// ユーザエージェントを取得
+	var agent = window.navigator.userAgent;
+	if (agent.indexOf('Edge')  > -1) {
+		jQuery.removeCookie('edgeReloadUrl', { path: '/' });
+	}
+	
+	/**
+	 * ブラウザの戻るボタン押下時に前画面を出力させない制御
+	 */
+	var agent = window.navigator.userAgent;
+	if (agent.indexOf('Mac') != -1 && agent.indexOf('Safari') != -1 
+		&& agent.indexOf('Chrome') == -1 && agent.indexOf('iPhone') == -1) {
+		//Mac×Safariの場合
+		window.onpopstate = function() {
+			//履歴に変化があった場合
+			//ダミーの履歴を挿入（ブラウザ戻るボタン押下時に前画面を表示させない）
+			history.pushState(null, null, null);
+		}
+		
+		window.onpageshow = function(event) {
+			if (event.persisted) {
+				//キャッシュを見て画面表示をしようとした場合（ブラウザ戻る/進む等が押下された場合）
+				//画面を再読込み
+				//（ログイン画面から履歴を参照した場合、セッションタイムアウトとするための制御）
+				window.location.reload();
+			}
+		}
+		
+		//ブラウザ進むボタン押下処理
+		//（Safari戻るボタン長押しで表示される履歴でログイン時のポータル画面を指定した場合
+		//  ログイン時の画面に戻さないための制御）
+		history.forward();
+	}else{
+		if (agent.indexOf('Firefox') != -1 || agent.indexOf('Chrome') != -1) {
+			setTimeout(window.history.forward(), 10);
+		}
+		//その他のOS×ブラウザの場合
+		if (window.addEventListener){
+			window.addEventListener('unload', function(){}, false);
+		}
+		//ブラウザ進むボタン押下処理
+		history.forward();
+	}
+	
+	/**
+	 * ボタンのイメージを変更します。
+
+	 * @args thisObj 呼び出し元のオブジェクト
+
+	 * @args event   呼び出し元で発生したイベント
+
+	 */
+	function swapButtonImg(thisObj, event) {
+		var buttonName = thisObj.id.substring(thisObj.id.lastIndexOf(":") + 1);
+		var src;
+		if (event.type == 'mouseover') {
+			src = "../../image/ja/" + skinFolder + "/button/button_" + buttonName + "_on.gif";
+		} else if (event.type == 'mouseout') {
+			src = "../../image/ja/" + skinFolder + "/button/button_" + buttonName + ".gif";
+	}
+
+		document.getElementById(thisObj.id).src = src;
+		return false;
+	}
+
+	//2006-03-29 muryoi 追加
+	/**
+	 *ボタンイメージの変更
+	 *@args btnGifName ボタンイメージの名称
+	 *@args thisObj    呼び出し元のオブジェクト
+	 */
+	 function swapImage(btnGifName, thisObj) {
+	 	var gifPath = "../../image/ja/def/button/" + btnGifName;
+	 	document.getElementById(thisObj.id).src = gifPath;
+ 	 }
+	//2006-03-29 muryoi 追加 end
+
+
+	/**
+	 * ログアウトボタンのイメージを変更します。
+
+	 * @args event   呼び出し元で発生したイベント
+
+	 */
+	function swapLogoutImg(thisObj, event) {
+
+		var src;
+		if (event.type == 'mouseover') {
+			src = "../../image/ja/def/button/button_logout_on.gif";
+		} else if (event.type == 'mouseout') {
+			src = "../../image/ja/def/button/button_logout.gif";
+		}
+		
+		document.getElementById(thisObj.id).src = src;
+		
+		return false;
+	}
+
+	/**
+	 * ホームボタンのイメージを変更します。
+
+	 * @args thisObj 呼び出し元のオブジェクト
+
+	 * @args event   呼び出し元で発生したイベント
+
+	 */
+	function swapHomeImg(thisObj, event) {
+		var src;
+		if (event.type == 'mouseover') {
+			src = "../../image/ja/def/button/button_home_on.gif";
+		} else if (event.type == 'mouseout') {
+			src = "../../image/ja/def/button/button_home.gif";
+		}
+
+		document.getElementById(thisObj.id).src = src;
+		return false;
+	}
+	
+	var skinFolder = 'null';
+	var skinFolderMap = new Array();
+	
+	// スキンフォルダを取得する。
+
+	loadSkinFolder();
+	
+	/*
+	 * iniファイルよりスキンフォルダ名を取得してマップを初期化します。
+
+	 */
+	function loadSkinFolder() {
+		skinFolderMap['SKIN1'] = 'null'
+		skinFolderMap['SKIN2'] = 'null'
+		skinFolderMap['SKIN3'] = 'null'
+		skinFolderMap['SKIN4'] = 'null'
+		skinFolderMap['SKIN5'] = 'null'
+		skinFolderMap['SKIN6'] = 'null'
+	}
+	
+	/*
+	 * スキンCdを設定します。
+
+	 * @args スキンCd
+	 */
+	function setSkin(skinCd) {
+		if (skinCd == null || skinCd == "") {
+			// スキンCdが指定されなかった場合の対応
+
+			skinCd = "SKIN1";
+		}
+		
+		skinFolder = skinFolderMap[skinCd];
+		if (skinFolder == null) {
+			// 無効なスキンCdが指定された場合の対応
+
+			skinFolder = skinFolderMap["SKIN1"];
+		}
+		changeSkin();
+	}
+		
+	/*
+	 * スキンの変更を行います。
+
+	 */
+	function changeSkin() {
+//		var skinElement = document.getElementById("skin");
+//		var css = "../../up/co/inc/css/skin/skin_" + skinFolder + ".css";
+		
+//		skinElement.href = css;
+
+		// 色を変更
+		// sitemap, help, portal
+//		var buttonArray = new Array("sitemap", "help", "portal");
+//		for (i = 0; i < buttonArray.length; i++) {
+//			document.getElementById(buttonArray[i]).src
+//				= "../../image/ja/" + skinFolder + "/button/button_" + buttonArray[i] + ".gif";
+//		}
+	}
+
+	/*
+	 * オプション画面ができるまでのモック
+	 */
+	var skinIndex = 1;
+	function potalSettingMock() {
+		skinIndex++;
+		
+		if (skinIndex > 6) {
+			skinIndex = 1;
+		}
+	
+		return "SKIN" + skinIndex;
+	}
+
+	function beforeChildRegist() {
+	    if ((!!window.opener) && 
+		(window.opener.closed == false) &&
+		(!!window.opener.hWinChild)) {
+		return true;
+	    } else {
+	    	window.close();
+		return false;
+	    }
+	}
+// 2007/12/05 UPEX-48 START 共通化
+		function backMove() {
+			if (confirmClose() == true) {
+				if (window.opener && !window.opener.closed) {
+					window.opener.document.getElementById('header:form1').submit();
+					window.close();
+				} else {
+				window.close();
+					}
+			} else {
+			return false;
+    		}
+		}
+// 2007/12/05 UPEX-48 END
+	function chkMojisu(target, maxlength) {
+		
+		if(0 == "1") {
+			if(target.value.length > maxlength) {
+				alert("文字数が制限を越えています。" + maxlength + "文字以内で入力してください。");
+				target.value = target.value.substr(0,maxlength);
+				target.focus();
+			}
+		}
+	}
+	
+	/*
+	 * 【Edge対応】ファイルダウンロード押下時のリロードイベント
+	 * 　※ファイルダウンロード後にリンクタグが動作不能となるため、
+	 * 　　ファイルダウンロード後にリロード処理を実行する。
+	 */
+	function edgeReload() {
+		// ユーザエージェントを取得
+		var agent = window.navigator.userAgent;
+		// Edgeである場合のみ、リロードイベント実行
+		if (agent.indexOf('Edge')  > -1) {
+		    var intervalId;
+		    // 1秒間隔で unipaReloadCookie cookie をチェック
+		    intervalId = setInterval(function() {
+				if (jQuery.cookie('edgeReloadUrl')) {
+					// Form作成
+					var form = document.createElement("form");
+					// URLを取得する。
+					form.action = jQuery.cookie('edgeReloadUrl');
+					// POST送信
+					form.method = "post";
+					// FormをBodyに追加
+					document.body.appendChild(form);
+					// サブミットする。
+					form.submit();
+					// ポーリングを停止
+					clearInterval(intervalId);
+				}
+			}, 1000);
+		}
+	} 
+</script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="GENERATOR" content="IBM Software Development Platform">
+<meta http-equiv="Content-Style-Type" content="text/css">
+
+
+<link href="/up/faces/up/km/inc/css/Kma00201A.css" rel="stylesheet" type="text/css" charset="shift_JIS">
+
+
+<script type="text/javascript">
+	
+	
+	
+	
+	function init() {
+		try{
+			
+			
+			
+			
+			 document.getElementById("form1:Nendo").focus();
+	
+			
+			
+		} catch (e) {
+		}
+	}
+				
+function searchClick() {
+	try {
+  		document.getElementById("form1:search").click();
+  	} catch (e) {
+  	}
+}
+	function func_1(thisObj) {
+	//このコンポーネントを直接参照するには、キーワード  'this' の代わりに 'thisObj' を使用します
+		var classservlet = "up/co/CoCobClsListAJAX";
+		var target		 = "form1:htmlCls";
+		var args = new Array();
+		args['htmlClsSbtCd'] = thisObj.value;
+		args['required'] = "false";
+		args['pcClass'] = 'com.jast.gakuen.up.xu.Xut10101A';
+		replaceSelectboxItem(classservlet,target,args);
+	}
+	function func_2(thisObj) {
+	//このコンポーネントを直接参照するには、キーワード  'this' の代わりに 'thisObj' を使用します
+		var classservlet = "up/co/CoCobSnkoListAJAX";
+		var target		 = "form1:htmlSnko";
+		var args = new Array();
+		args['htmlSnkoSbtCd'] = thisObj.value;
+		args['required'] = "false";
+		args['pcClass'] = 'com.jast.gakuen.up.xu.Xut10101A';
+		replaceSelectboxItem(classservlet,target,args);
+	}
+
+</script>
+<title>Campus Life Assist System TUS</title></head>
+
+
+
+	<body onload="return(hX_3.runEvent(this, event));">
+
+		
+		<div id="contents">
+		<div id="main">
+			
+			<form id="header:form1" method="post" action="/up/faces/up/xu/Xut10101A.jsp" class="form" enctype="application/x-www-form-urlencoded">
+<div id="header" style="background:url(../../image/tus_class_top.gif) no-repeat;"> 
+				
+				
+				<div id="account">
+				<table border="0" cellpadding="0" cellspacing="0" height="100%" style="border:0px solid blue">
+					<tbody><tr>
+						<td>
+							<div class="middle" style="color:BLACK"><span>金　埈賢&nbsp;さん&nbsp;：&nbsp;前回ログイン&nbsp;2021/09/29 22:22</span></div>
+						</td>
+					</tr>
+					<tr>
+						<td align="right">
+							<table border="0" cellpadding="0" cellspacing="0" style="border:0px solid blue">
+								<tbody><tr>
+						          <td valign="top"><img src="../../image/ja/def/button/header_triangle.gif"></td>
+						          <td valign="top"><a href="#" onclick="return doHome(this, event);"><img src="../../image/ja/def/button/button_home.gif" border="0" alt="ホーム" title="ホーム"></a></td>
+						          
+						          
+						          
+						          	<td valign="top"><a href="#" onclick="return openPortal(this, event);"><img src="../../image/ja/def/button/button_mail.gif" border="0" alt="メール設定" title="メール設定"></a></td>
+						          
+						          
+						          	<td valign="top"><a href="#" onclick="return doSiteMap(this, event);"><img src="../../image/ja/def/button/button_sitemap.gif" border="0" alt="サイトマップ" title="サイトマップ"></a></td>
+						          
+						          
+						            <td valign="top"><a href="#" onclick="return doLogout(this, event);"><img src="../../image/ja/def/button/button_logout.gif" border="0" alt="ログアウト" title="ログアウト"></a></td>
+						          
+								</tr>
+							</tbody></table>
+						</td>
+					</tr>
+				</tbody></table>
+				</div>
+
+				
+				</div>
+				
+
+				
+				
+
+
+
+
+
+
+
+<script type="text/javascript">
+	<!--
+	
+	function MenuOn(x){
+		var menu = document.getElementById("pmenu"+x);
+		menu.style.visibility="visible";
+		
+	}
+	
+	function MenuOff(x){
+		var menu = document.getElementById("pmenu"+x);
+		menu.style.visibility="hidden";
+		
+	}
+	
+	function MenuOn2(z,x){
+		var menu = document.getElementById("pmenu"+z+"-"+x);
+		menu.style.visibility="visible";
+		
+	}
+	
+	function MenuOff2(z,x){
+		var menu = document.getElementById("pmenu"+z+"-"+x);
+		menu.style.visibility="hidden";
+		
+	}
+
+	function clickMenuItem(menuNo,funcRowId) {
+		document.getElementById("header:form1:hiddenMenuNo").value = menuNo;
+ 		document.getElementById("header:form1:hiddenFuncRowId").value = funcRowId;
+		document.getElementById("header:form1:htmlMenuItemButton").click();
+	}
+	
+	function clickSiteMenuItem(menuNo,funcRowId) {
+		document.getElementById("header:form1:hiddenMenuNo").value = menuNo;
+ 		document.getElementById("header:form1:hiddenFuncRowId").value = funcRowId;
+		document.getElementById("header:form1:htmlSiteMenuItemButton").click();
+	}
+	
+	//-->
+</script>
+
+&nbsp;
+
+<div id="menubox">
+<div id="menu1" onmouseover="MenuOn(1)" onmouseout="MenuOff(1)">
+<a href="#" id="menuc1" class="menuhead">個人情報</a>
+<div id="pmenu1" class="submenu" style="white-space:nowrap;">
+<a href="#" id="menuimg1-1" class="submenuStart" onclick="clickMenuItem(101,0);">学籍情報照会</a>
+<a href="#" id="menuimg1-2" onclick="clickMenuItem(102,0);">学籍情報変更申請</a>
+<a href="#" id="menuimg1-3" onclick="clickMenuItem(103,0);">ロッカー申込</a>
+<a href="#" id="menuimg1-4" onclick="clickMenuItem(104,0);">学生口座情報登録</a>
+<a href="#" id="menuimg1-5" class="submenuEnd" onclick="clickSiteMenuItem(105,0);">パスワード変更</a>
+</div>
+</div>
+<div id="menu2" onmouseover="MenuOn(2)" onmouseout="MenuOff(2)">
+<a href="#" id="menuc2" class="menuhead">履修関連</a>
+<div id="pmenu2" class="submenu" style="white-space:nowrap;">
+<a href="#" id="menuimg2-1" class="submenuStart" onclick="clickMenuItem(201,0);">履修登録</a>
+<a href="#" id="menuimg2-2" onclick="clickMenuItem(203,0);">学生時間割表</a>
+<a href="#" id="menuimg2-3" class="submenuEnd" onclick="clickMenuItem(204,0);">授業時間割表</a>
+</div>
+</div>
+<div id="menu3" onmouseover="MenuOn(3)" onmouseout="MenuOff(3)">
+<a href="#" id="menuc3" class="menuhead">授業関連</a>
+<div id="pmenu3" class="submenu" style="white-space:nowrap;" onmouseout="MenuOff2(3,2),MenuOff2(3,5)">
+<a href="#" id="menuimg3-1" class="submenuStart" onclick="clickMenuItem(301,0);">シラバス照会</a>
+<a href="#" id="menuimg3-2" onmouseover="MenuOn2(3,2)">授業改善アンケ..　&gt;&gt;</a>
+<a href="#" id="menuimg3-3" onclick="clickMenuItem(303,0);">学生出欠状況確認</a>
+<a href="#" id="menuimg3-4" onclick="clickMenuItem(304,0);">モバイル学生出席登録</a>
+<a href="#" id="menuimg3-5" class="submenuEnd" onmouseover="MenuOn2(3,5)">ワクチン接種に..　&gt;&gt;</a>
+<div id="pmenu3-2" class="submenu2-2" style="top:26px;left:119px;white-space:nowrap;" onmouseover="MenuOn2(3,2)" onmouseout="MenuOff2(3,2)">
+<a href="#" id="menuitem1" onclick="clickMenuItem(30201,0);">授業アンケート回答</a>
+<a href="#" id="menuitem2" class="submenu2End" onclick="clickMenuItem(30202,0);">授業アンケート集計結果参照</a>
+</div>
+<div id="pmenu3-5" class="submenu2-5" style="top:104px;left:119px;white-space:nowrap;" onmouseover="MenuOn2(3,5)" onmouseout="MenuOff2(3,5)">
+<a href="#" id="menuitem1" onclick="clickMenuItem(30501,0);">欠席申請フォーム</a>
+<a href="#" id="menuitem2" class="submenu2End" onclick="clickSiteMenuItem(30502,0);">欠席申請マニュアル</a>
+</div>
+</div>
+</div>
+<div id="menu4" onmouseover="MenuOn(4)" onmouseout="MenuOff(4)">
+<a href="#" id="menuc4" class="menuhead">成績関連</a>
+<div id="pmenu4" class="submenu" style="white-space:nowrap;">
+<a href="#" id="menuimg4-1" class="submenuStart" onclick="clickMenuItem(401,0);">成績照会</a>
+<a href="#" id="menuimg4-2" class="submenuEnd" onclick="clickMenuItem(402,0);">成績評価公開授業照会</a>
+</div>
+</div>
+<div id="menu5" onmouseover="MenuOn(5)" onmouseout="MenuOff(5)">
+<a href="#" id="menuc5" class="menuhead">アンケート</a>
+<div id="pmenu5" class="submenu" style="white-space:nowrap;">
+<a href="#" id="menuimg5-1" class="submenuStart submenuEnd" onclick="clickMenuItem(501,0);">アンケート回答</a>
+</div>
+</div>
+<div id="menu6" onmouseover="MenuOn(6)" onmouseout="MenuOff(6)">
+<a href="#" id="menuc6" class="menuhead">就職関連</a>
+<div id="pmenu6" class="submenu" style="white-space:nowrap;">
+<a href="#" id="menuimg6-1" class="submenuStart" onclick="clickSiteMenuItem(601,0);">就職支援システム</a>
+<a href="#" id="menuimg6-2" class="submenuEnd" onclick="clickSiteMenuItem(602,0);">利用方法</a>
+</div>
+</div>
+<div id="menu7" onmouseover="MenuOn(7)" onmouseout="MenuOff(7)">
+<a href="#" id="menuc7" class="menuhead">リンク</a>
+<div id="pmenu7" class="submenu" style="white-space: nowrap; visibility: hidden;" onmouseout="MenuOff2(7,2)">
+<a href="#" id="menuimg7-1" class="submenuStart" onclick="clickSiteMenuItem(701,0);">LETUS</a>
+<a href="#" id="menuimg7-2" class="submenuEnd" onmouseover="MenuOn2(7,2)">&lt;&lt;　Box</a>
+<div id="pmenu7-2" class="submenuLast2-2" style="top:26px;left:-170px;white-space:nowrap;" onmouseover="MenuOn2(7,2)" onmouseout="MenuOff2(7,2)">
+<a href="#" id="menuitem1" onclick="clickSiteMenuItem(70201,0);">Boxログイン</a>
+<a href="#" id="menuitem2" class="submenu2End" onclick="clickSiteMenuItem(70202,0);">Boxについて</a>
+</div>
+</div>
+</div>
+<div id="menu8" onmouseover="MenuOn(8)" onmouseout="MenuOff(8)">
+<a href="#" id="menuc8" class="menuhead">教室予約関連</a>
+<div id="pmenu8" class="submenu" style="white-space:nowrap;">
+<a href="#" id="menuimg8-1" class="submenuStart submenuEnd" onclick="clickMenuItem(801,0);">教室予約状況照会</a>
+</div>
+</div>
+</div><input type="submit" value="実行" name="header:form1:htmlFuncOrderNextButton" id="header:form1:htmlFuncOrderNextButton" style="display:none" class="commandExButton"><input type="submit" value="実行" name="header:form1:htmlFuncOrderBeforeButton" id="header:form1:htmlFuncOrderBeforeButton" style="display:none" class="commandExButton"><input type="submit" value="ホーム" name="header:form1:home" id="header:form1:home" style="display:none" class="commandExButton"><input type="submit" value="ログアウト" name="header:form1:logout" id="header:form1:logout" style="display:none" class="commandExButton"><input type="submit" value="サイトマップ" name="header:form1:sitemapButton" id="header:form1:sitemapButton" style="display:none" class="commandExButton"><input type="submit" value="実行" name="header:form1:htmlMenuItemButton" id="header:form1:htmlMenuItemButton" style="display:none" class="commandExButton"><input type="submit" value="実行" name="header:form1:htmlSiteMenuItemButton" id="header:form1:htmlSiteMenuItemButton" style="display:none" class="commandExButton"><input id="header:form1:hiddenMenuNo" type="hidden" name="header:form1:hiddenMenuNo"><input id="header:form1:hiddenFuncRowId" type="hidden" name="header:form1:hiddenFuncRowId"><input type="hidden" name="com.sun.faces.VIEW" id="com.sun.faces.VIEW" value="_id26546:_id26568"><input type="hidden" name="header:form1" value="header:form1">
+<script type="text/javascript">
+<!--
+function clearFormHiddenParams_header_form1(curFormName) {
+  var curForm = document.forms[curFormName];
+}
+//-->
+</script>
+</form><form id="header:form2" method="post" action="/up/faces/up/xu/Xut10101A.jsp" class="form" enctype="application/x-www-form-urlencoded" onsubmit="return true;" style="height:0px;" target="_blank">
+<input type="submit" value="実行" name="header:form2:siteLaunch" id="header:form2:siteLaunch" style="display:none" class="commandExButton"><input type="hidden" name="com.sun.faces.VIEW" id="com.sun.faces.VIEW" value="_id26546:_id26568"><input type="hidden" name="header:form2" value="header:form2">
+<script type="text/javascript">
+<!--
+function clearFormHiddenParams_header_form2(curFormName) {
+  var curForm = document.forms[curFormName];
+  curForm.target='_blank';
+}
+//-->
+</script>
+</form>
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+
+
+
+
+
+	
+	
+<script type="text/javascript">
+	function doLogout(thisObj, thisEvent) {
+		document.getElementById("header:form1:logout").click();
+		return false;
+	}
+	function doSiteMap(thisObj, thisEvent) {
+		document.getElementById("header:form1:sitemapButton").click();
+		return false;
+	}
+	function doHome(thisObj, thisEvent) {
+		document.getElementById("header:form1:home").click();
+		return false;
+	}
+	
+	function openHelp() {
+		window.open("/up/faces/#Xut10101A","HELP");
+	}
+
+	
+	function openPortal() {
+			
+		var url      = "/up/faces/up/po/pPoa0701A.jsp";
+		var target   = "PPoa0701A";
+		var status   = "width=800,height=400,scrollbars=yes,resizable=yes";
+		var args     = "com.jast.gakuen.up.po.PPoa0701A";
+	
+		removeSession(args,url,target,status);
+		
+		return false;
+	}
+	
+	
+
+</script>
+			
+		<table><tbody><tr><td>
+		<div id="msgArea"><span id="htmlErrorMessage" class="outputText"></span>
+		</div>
+		</td></tr></tbody></table>
+
+		<form id="form1" method="post" action="/up/faces/up/xu/Xut10101A.jsp" class="form" enctype="application/x-www-form-urlencoded">
+
+			<table border="0" class="outline">
+					<tbody><tr> 
+						<td width="120px" class="leftCol"></td>
+						<td width="720">
+							<div id="titleTableArea">
+								<table width="100%" border="0" cellpadding="0" cellspacing="0" class="inTable">
+									<tbody><tr>
+										<td class="titleArea"><span class="titleAreaL">授業時間割表</span></td>
+									</tr>
+								</tbody></table>
+							</div>
+						</td>
+						<td width="120px" class="rightCol"></td>
+					</tr>
+					<tr> 
+						<td>
+						</td>
+						<td>
+							<div id="singleTableArea">
+								<table class="singleTable singleTableLine" border="1" cellpadding="0" cellspacing="0" width="720">
+										<tbody><tr>
+											<th class="label" width="120"><span id="form1:labelNendo" class="outputText" style="">開講年度</span></th>
+											<td width="490"><input id="form1:Nendo" type="text" name="form1:Nendo" value="2021" class="inputText" maxlength="4" size="4" tabindex="1"></td>
+										<td align="center" class="buttonArea" rowspan="5">
+										<a href="javascript:searchClick()" onclick="return true;" tabindex="12">左の条件から<br>検索します<br>
+										</a> <input type="image" src="../../image/ja/def/button/search_off.gif" name="form1:search" id="form1:search" alt="検索" onmouseout="swapImage('search_off.gif',this)" onmouseover="swapImage('search_on.gif',this)" tabindex="13" class="commandExButton"></td>
+									</tr>
+									<tr>
+											<th class="label"><span id="form1:labelGakki" class="outputText" style="">学期</span></th>
+											<td><select id="form1:GakkiCmb" name="form1:GakkiCmb" class="selectOneMenu" size="1" tabindex="2">	<option value="1">前期</option>
+	<option value="2" selected="selected">後期</option>
+	<option value="3">第１クォーター</option>
+	<option value="4">第２クォーター</option>
+	<option value="5">第３クォーター</option>
+	<option value="6">第４クォーター</option>
+</select>
+												
+											</td>
+										</tr>
+									
+									
+									<tr>
+											<th class="label"><span id="form1:labelCurGakka" class="outputText" style="">カリキュラム学科</span>
+									</th>
+											<td><select id="form1:CurGakkaCmb" name="form1:CurGakkaCmb" class="selectOneMenu" size="1" tabindex="5">	<option value="1">東理大</option>
+	<option value="11">東理大 理一</option>
+	<option value="110">東理大 理一 教養</option>
+	<option value="111">東理大 理一 数学</option>
+	<option value="112">東理大 理一 物理</option>
+	<option value="113">東理大 理一 化学</option>
+	<option value="114">東理大 理一 応数</option>
+	<option value="115">東理大 理一 応物</option>
+	<option value="116">東理大 理一 応化</option>
+	<option value="12">東理大 理二</option>
+	<option value="120">東理大 理二 教養</option>
+	<option value="121">東理大 理二 数学</option>
+	<option value="122">東理大 理二 物理</option>
+	<option value="123">東理大 理二 化学</option>
+	<option value="13">東理大 薬</option>
+	<option value="13A" selected="selected">東理大 薬 薬</option>
+	<option value="13B">東理大 薬 創薬</option>
+	<option value="14">東理大 工</option>
+	<option value="140">東理大 工 教養</option>
+	<option value="141">東理大 工 建築</option>
+	<option value="142">東理大 工 工化</option>
+	<option value="143">東理大 工 電工</option>
+	<option value="144">東理大 工 経工</option>
+	<option value="145">東理大 工 機工</option>
+	<option value="146">東理大 工 情工</option>
+	<option value="14A">東理大 工 建築　夜間社会人</option>
+	<option value="15">東理大 工二</option>
+	<option value="150">東理大 工二 教養</option>
+	<option value="151">東理大 工二 建築</option>
+	<option value="152">東理大 工二 電工</option>
+	<option value="153">東理大 工二 経工</option>
+	<option value="16">東理大 理工</option>
+	<option value="160">東理大 理工 教養</option>
+	<option value="161">東理大 理工 数学</option>
+	<option value="162">東理大 理工 物理</option>
+	<option value="163">東理大 理工 情報</option>
+	<option value="164">東理大 理工 応生</option>
+	<option value="165">東理大 理工 建築</option>
+	<option value="166">東理大 理工 先化</option>
+	<option value="167">東理大 理工 電情</option>
+	<option value="168">東理大 理工 経工</option>
+	<option value="169">東理大 理工 機工</option>
+	<option value="16A">東理大 理工 土工</option>
+	<option value="17">東理大 先進工</option>
+	<option value="170">東理大 先進工 教養</option>
+	<option value="171">東理大 先進工 電シ工</option>
+	<option value="172">東理大 先進工 マテ工</option>
+	<option value="173">東理大 先進工 生シ工</option>
+	<option value="18">東理大 経営</option>
+	<option value="181">東理大 経営 経営</option>
+	<option value="182">東理大 経営 ビジ</option>
+	<option value="183">東理大 経営 国デ</option>
+	<option value="2">東理大・専</option>
+	<option value="22">東理大・専 理専</option>
+	<option value="221">東理大・専 理専 数</option>
+	<option value="222">東理大・専 理専 物</option>
+	<option value="223">東理大・専 理専 化</option>
+	<option value="3">東理大・院</option>
+	<option value="31">東理大・院 理研</option>
+	<option value="311">東理大・院 理研 数</option>
+	<option value="3111">東理大・院 理研 数 修</option>
+	<option value="3112">東理大・院 理研 数 博</option>
+	<option value="312">東理大・院 理研 物</option>
+	<option value="3121">東理大・院 理研 物 修</option>
+	<option value="3122">東理大・院 理研 物 博</option>
+	<option value="313">東理大・院 理研 化</option>
+	<option value="3131">東理大・院 理研 化 修</option>
+	<option value="3132">東理大・院 理研 化 博</option>
+	<option value="314">東理大・院 理研 応数</option>
+	<option value="3141">東理大・院 理研 応数 修</option>
+	<option value="3142">東理大・院 理研 応数 博</option>
+	<option value="315">東理大・院 理研 応物</option>
+	<option value="3151">東理大・院 理研 応物 修</option>
+	<option value="3152">東理大・院 理研 応物 博</option>
+	<option value="317">東理大・院 理研 科教</option>
+	<option value="3171">東理大・院 理研 科教 修</option>
+	<option value="3172">東理大・院 理研 科教 博</option>
+	<option value="33">東理大・院 薬研</option>
+	<option value="331">東理大・院 薬研 薬</option>
+	<option value="33B">東理大・院 薬研 薬科</option>
+	<option value="33B1">東理大・院 薬研 薬科 修</option>
+	<option value="33B2">東理大・院 薬研 薬科 博</option>
+	<option value="33C2">東理大・院 薬研 博</option>
+	<option value="34">東理大・院 工研</option>
+	<option value="341">東理大・院 工研 建築</option>
+	<option value="3411">東理大・院 工研 建築 修</option>
+	<option value="3412">東理大・院 工研 建築 博</option>
+	<option value="342">東理大・院 工研 工化</option>
+	<option value="3421">東理大・院 工研 工化 修</option>
+	<option value="3422">東理大・院 工研 工化 博</option>
+	<option value="343">東理大・院 工研 電工</option>
+	<option value="3431">東理大・院 工研 電工 修</option>
+	<option value="3432">東理大・院 工研 電工 博</option>
+	<option value="344">東理大・院 工研 経工</option>
+	<option value="3441">東理大・院 工研 経工 修</option>
+	<option value="3442">東理大・院 工研 経工 博</option>
+	<option value="345">東理大・院 工研 機工</option>
+	<option value="3451">東理大・院 工研 機工 修</option>
+	<option value="3452">東理大・院 工研 機工 博</option>
+	<option value="346">東理大・院 工研 情工</option>
+	<option value="3461">東理大・院 工研 情工 修</option>
+	<option value="3462">東理大・院 工研 情工 博</option>
+	<option value="36">東理大・院 理工研</option>
+	<option value="361">東理大・院 理工研 数</option>
+	<option value="3611">東理大・院 理工研 数 修</option>
+	<option value="3612">東理大・院 理工研 数 博</option>
+	<option value="362">東理大・院 理工研 物</option>
+	<option value="3621">東理大・院 理工研 物 修</option>
+	<option value="3622">東理大・院 理工研 物 博</option>
+	<option value="363">東理大・院 理工研 情報</option>
+	<option value="3631">東理大・院 理工研 情報 修</option>
+	<option value="3632">東理大・院 理工研 情報 博</option>
+	<option value="364">東理大・院 理工研 応生</option>
+	<option value="3641">東理大・院 理工研 応生 修</option>
+	<option value="3642">東理大・院 理工研 応生 博</option>
+	<option value="365">東理大・院 理工研 建築</option>
+	<option value="3651">東理大・院 理工研 建築 修</option>
+	<option value="3652">東理大・院 理工研 建築 博</option>
+	<option value="366">東理大・院 理工研 先化</option>
+	<option value="3661">東理大・院 理工研 先化 修</option>
+	<option value="3662">東理大・院 理工研 先化 博</option>
+	<option value="367">東理大・院 理工研 電工</option>
+	<option value="3671">東理大・院 理工研 電工 修</option>
+	<option value="3672">東理大・院 理工研 電工 博</option>
+	<option value="368">東理大・院 理工研 経工</option>
+	<option value="3681">東理大・院 理工研 経工 修</option>
+	<option value="3682">東理大・院 理工研 経工 博</option>
+	<option value="369">東理大・院 理工研 機工</option>
+	<option value="3691">東理大・院 理工研 機工 修</option>
+	<option value="3692">東理大・院 理工研 機工 博</option>
+	<option value="36A">東理大・院 理工研 土工</option>
+	<option value="36A1">東理大・院 理工研 土工 修</option>
+	<option value="36A2">東理大・院 理工研 土工 博</option>
+	<option value="36B">東理大・院 理工研 火災</option>
+	<option value="36B1">東理大・院 理工研 火災 修</option>
+	<option value="36B2">東理大・院 理工研 火災 博</option>
+	<option value="37">東理大・院 先進工研</option>
+	<option value="371">東理大・院 先進工研 電シ工</option>
+	<option value="3711">東理大・院 先進工研 電シ工 修</option>
+	<option value="3712">東理大・院 先進工研 電シ工 博</option>
+	<option value="372">東理大・院 先進工研 マテ工</option>
+	<option value="3721">東理大・院 先進工研 マテ工 修</option>
+	<option value="3722">東理大・院 先進工研 マテ工 博</option>
+	<option value="373">東理大・院 先進工研 生シ工</option>
+	<option value="3731">東理大・院 先進工研 生シ工 修</option>
+	<option value="3732">東理大・院 先進工研 生シ工 博</option>
+	<option value="37A">東理大・院 先進工研 ナノ</option>
+	<option value="38">東理大・院 経営研</option>
+	<option value="381">東理大・院 経営研 経営</option>
+	<option value="3811">東理大・院 経営研 経営 修</option>
+	<option value="3812">東理大・院 経営研 経営 博</option>
+	<option value="382">東理大・院 経営研 技経</option>
+	<option value="3821">東理大・院 経営研 技経 専門職学位課程</option>
+	<option value="3A">東理大・院 生命研</option>
+	<option value="3A1">東理大・院 生命研 生命</option>
+	<option value="3A11">東理大・院 生命研 生命 修</option>
+	<option value="3A12">東理大・院 生命研 生命 博</option>
+	<option value="3B">東理大・院 総化研</option>
+	<option value="3B1">東理大・院 総化研 総化</option>
+	<option value="3B11">東理大・院 総化研 総化 修</option>
+	<option value="3B12">東理大・院 総化研 総化 博</option>
+	<option value="3C">東理大・院 科教研</option>
+	<option value="3C1">東理大・院 科教研 科教</option>
+	<option value="3C11">東理大・院 科教研 科教 修</option>
+	<option value="3C12">東理大・院 科教研 科教 博</option>
+	<option value="3K">東理大・院 火研</option>
+	<option value="3K1">東理大・院 火研 火科</option>
+	<option value="3K11">東理大・院 火研 火科 修</option>
+	<option value="3K12">東理大・院 火研 火科 博</option>
+	<option value="3M">東理大・院 イノベ研</option>
+	<option value="3M1">東理大・院 イノベ研 技経専攻１年</option>
+	<option value="3M11">東理大・院 イノベ研 技経専攻１年 専門職学位課程</option>
+	<option value="3M2">東理大・院 イノベ研 技経専攻</option>
+	<option value="3M21">東理大・院 イノベ研 技経専攻 専門職学位課程</option>
+	<option value="3M3">東理大・院 イノベ研 知財</option>
+	<option value="3M31">東理大・院 イノベ研 知財 専門職学位課程</option>
+	<option value="3M4">東理大・院 イノベ研 イノ</option>
+	<option value="3M42">東理大・院 イノベ研 イノ 博</option>
+	<option value="4">東理大・科</option>
+	<option value="41">東理大・科 理一</option>
+	<option value="42">東理大・科 理二</option>
+	<option value="43">東理大・科 薬</option>
+	<option value="44">東理大・科 工</option>
+	<option value="45">東理大・科 工二</option>
+	<option value="46">東理大・科 理工</option>
+	<option value="47">東理大・科 先進工</option>
+	<option value="48">東理大・科 経営</option>
+	<option value="49">東理大・科 理専</option>
+	<option value="4A">東理大・科 理研</option>
+	<option value="4B">東理大・科 工研</option>
+	<option value="4C">東理大・科 薬研</option>
+	<option value="4D">東理大・科 理工研</option>
+	<option value="4E">東理大・科 先進工研</option>
+	<option value="4F">東理大・科 経営研</option>
+	<option value="4G">東理大・科 生命研</option>
+	<option value="4H">東理大・科 総化研</option>
+	<option value="4I">東理大・科 科教研</option>
+	<option value="4K">東理大・科 火研</option>
+	<option value="4M">東理大・科 イノベ研</option>
+	<option value="5">東理大・研</option>
+	<option value="51">東理大・研 理一</option>
+	<option value="52">東理大・研 理二</option>
+	<option value="53">東理大・研 薬</option>
+	<option value="54">東理大・研 工</option>
+	<option value="55">東理大・研 工二</option>
+	<option value="56">東理大・研 理工</option>
+	<option value="57">東理大・研 先進工</option>
+	<option value="58">東理大・研 経営</option>
+	<option value="59">東理大・研 理専</option>
+	<option value="5A">東理大・研 理研</option>
+	<option value="5B">東理大・研 薬研</option>
+	<option value="5C">東理大・研 工研</option>
+	<option value="5D">東理大・研 理工研</option>
+	<option value="5E">東理大・研 先進工研</option>
+	<option value="5F">東理大・研 経営研</option>
+	<option value="5G">東理大・研 生命研</option>
+	<option value="5H">東理大・研 総化研</option>
+	<option value="5I">東理大・研 科教研</option>
+	<option value="5K">東理大・研 火研</option>
+	<option value="6">東理大</option>
+	<option value="61">東理大 総合研究所</option>
+	<option value="610">東理大 総合研究所 火災科学研究部門</option>
+	<option value="611">東理大 総合研究所 界面科学研究部門</option>
+	<option value="612">東理大 総合研究所 リモート</option>
+	<option value="613">東理大 総合研究所 インテリジェント</option>
+	<option value="614">東理大 総合研究所 計算力学研究部門</option>
+	<option value="615">東理大 総合研究所 高温超伝導</option>
+	<option value="616">東理大 総合研究所 環境・エネルギー</option>
+	<option value="617">東理大 総合研究所 基礎科学研究部門</option>
+	<option value="618">東理大 総合研究所 先端材料研究部門</option>
+	<option value="619">東理大 総合研究所 光科学研究部門</option>
+	<option value="61A">東理大 総合研究所 赤外自由電子</option>
+	<option value="63">東理大 総合研究機構</option>
+	<option value="631">東理大 総合研究機構 研究部</option>
+	<option value="6311">東理大 総合研究機構 研究部 界面科学</option>
+	<option value="6312">東理大 総合研究機構 研究部 インテリジェント</option>
+	<option value="6313">東理大 総合研究機構 研究部 数学教育</option>
+	<option value="6314">東理大 総合研究機構 研究部 インターフェース</option>
+	<option value="6315">東理大 総合研究機構 研究部 人・未来</option>
+	<option value="6316">東理大 総合研究機構 研究部 ものづくり・先端</option>
+	<option value="6317">東理大 総合研究機構 研究部 次世代フォト</option>
+	<option value="635">東理大 総合研究機構 研究センター部</option>
+	<option value="6351">東理大 総合研究機構 研究センター部 赤外</option>
+	<option value="6352">東理大 総合研究機構 研究センター部 先端</option>
+	<option value="6353">東理大 総合研究機構 研究センター部 火災</option>
+	<option value="6354">東理大 総合研究機構 研究センター部 ＤＤＳ</option>
+	<option value="6355">東理大 総合研究機構 研究センター部 ゲノム</option>
+	<option value="6356">東理大 総合研究機構 研究センター部 再生</option>
+	<option value="6357">東理大 総合研究機構 研究センター部 ナノ</option>
+	<option value="6358">東理大 総合研究機構 研究センター部 グリ</option>
+	<option value="6359">東理大 総合研究機構 研究センター部 ホリ</option>
+	<option value="635A">東理大 総合研究機構 研究センター部 人間</option>
+	<option value="635B">東理大 総合研究機構 研究センター部 量子</option>
+	<option value="635C">東理大 総合研究機構 研究センター部 ナノ粒子</option>
+	<option value="635D">東理大 総合研究機構 研究センター部 ポリテク</option>
+	<option value="638">東理大 総合研究機構 研究技術部</option>
+	<option value="6381">東理大 総合研究機構 研究技術部 研機センター</option>
+	<option value="67">東理大 生命医科学研究所</option>
+	<option value="671">東理大 生命医科学研究所 免疫生物学</option>
+	<option value="672">東理大 生命医科学研究所 分子生物学</option>
+	<option value="673">東理大 生命医科学研究所 生命情報科学</option>
+	<option value="674">東理大 生命医科学研究所 分子病態学</option>
+	<option value="675">東理大 生命医科学研究所 発生および老化</option>
+	<option value="676">東理大 生命医科学研究所 細胞分化研究部門</option>
+	<option value="677">東理大 生命医科学研究所 共同研究部門</option>
+	<option value="678">東理大 生命医科学研究所 実験動物学研究</option>
+	<option value="68">東理大 情報科学研究機構</option>
+	<option value="681">東理大 情報科学研究機構 計算科学</option>
+	<option value="682">東理大 情報科学研究機構 情報メディア</option>
+	<option value="683">東理大 情報科学研究機構 情報科学教育</option>
+	<option value="684">東理大 情報科学研究機構 バイオ</option>
+</select>
+												
+											</td>
+										</tr>
+									<tr>
+											<th class="label"><span id="form1:labelGakunen" class="outputText">学年</span>
+											</th>
+											<td><select id="form1:GakunenCmb" name="form1:GakunenCmb" class="selectOneMenu" size="1" tabindex="6">	<option value="0">全て対象</option>
+	<option value="1">1</option>
+	<option value="2">2</option>
+	<option value="3">3</option>
+	<option value="4" selected="selected">4</option>
+	<option value="5">5</option>
+	<option value="6">6</option>
+</select>
+												
+											</td>
+										</tr>
+									
+									
+									
+									
+									
+									
+									
+									<tr>
+											<th class="label"><span id="form1:labelHyojiKeishiki" class="outputText" style="">表示形式</span></th>
+											<td><table id="form1:HyojiKeishiki" class="selectOneRadio">
+	<tbody><tr>
+<td>
+<label><input type="radio" checked="" name="form1:HyojiKeishiki" value="2" tabindex="13"> カレンダー</label></td>
+<td>
+<label><input type="radio" name="form1:HyojiKeishiki" value="1" tabindex="13"> 一覧</label></td>
+	</tr>
+</tbody></table>
+										
+										
+										</td>
+										</tr>
+								</tbody></table>
+							</div>
+						</td>
+						<td></td>
+					</tr>
+					</tbody></table>
+			<input type="hidden" name="com.sun.faces.VIEW" id="com.sun.faces.VIEW" value="_id26546:_id26568"><input type="hidden" name="form1" value="form1">
+<script type="text/javascript">
+<!--
+function clearFormHiddenParams_form1(curFormName) {
+  var curForm = document.forms[curFormName];
+}
+//-->
+</script>
+</form></div>
+<br><br>
+		
+		
+					<form id="footer:_id30" method="post" action="/up/faces/up/xu/Xut10101A.jsp" enctype="application/x-www-form-urlencoded">
+<div id="footer">
+				<div class="copyright">
+				Copyright 2008 Tokyo University of Science All Rights Reserved.
+				</div>
+				</div><input type="hidden" name="com.sun.faces.VIEW" id="com.sun.faces.VIEW" value="_id26546:_id26568"><input type="hidden" name="footer:_id30" value="footer:_id30">
+<script type="text/javascript">
+<!--
+function clearFormHiddenParams_footer__id30(curFormName) {
+  var curForm = document.forms[curFormName];
+}
+//-->
+</script>
+</form>
+					</div>
+		
+	
+<script type="text/JavaScript" language="JavaScript" src="/up/.ibmjsfres/hxclient_v3.js"></script>
+<script type="text/JavaScript" language="JavaScript">
+hX_3.STR_SPINNER_INCREMENT="Increment";
+hX_3.STR_SPINNER_DECREMENT="Decrement";
+hX_3.STR_SLIDER_LABEL="Show Slider";
+hX_3.STR_TABPANEL_SCROLLLEFT="Scroll Left";
+hX_3.STR_TABPANEL_SCROLLRIGHT= "Scroll Right";
+hX_3.STR_DATE_DN_TOGGLE="Show Calendar";
+hX_3.STR_DATE_PREVIOUS_YEAR="Previous year";
+hX_3.STR_DATE_NEXT_YEAR		=" Next year";
+hX_3.STR_DATE_PREVIOUS_MONTH="Previous month";
+hX_3.STR_DATE_NEXT_MONTH="Next month";
+hX_3.STR_DATE_MONTHS=new Array ("January","February","March","April","May","June","July","August","September","October","November","December");
+hX_3.STR_DATE_SHMONTHS=new Array ("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
+hX_3.STR_DATE_DAYS=new Array ("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
+hX_3.STR_DATE_SHDAYS=new Array ("Sun","Mon","Tue","Wed","Thu","Fri","Sat");
+hX_3.STR_DATE_SHSHDAYS=new Array ("S","M","T","W","T","F","S");
+hX_3.DATE_EPOCHS=[
+[["-", "Before Christ", "BC"],
+["+", "Anno Domini", 	"AD"]],
+[["-", "Before Christ Era", "BCE"],
+["+", "Christian Era", 	"CE"]],
+[["18680908", "Meiji",  "Mei"],
+["19120731", "Taisho", "Tai"],
+["19261226", "Showa",  "Sho"],
+["19890108", "Heisei", "Hei"]]
+];
+hX_3.STR_AM_SUFFIX  ="AM";
+hX_3.STR_PM_SUFFIX  ="PM";
+hX_3.STR_TIMEZONES=[
+["+0000", "GMT", "+0000", "GMT",  "Greenwich Mean Time"],
+["-0400", "AST", "-0300", "ADT",  "Atlantic Standard Time"],
+["-0500", "EST", "-0400", "EDT",  "Eastern Standard Time"],
+["-0600", "CST", "-0500", "CDT",  "Central Standard Time"],
+["-0700", "MST", "-0600", "MDT",  "Mountain Standard Time"],
+["-0800", "PST", "-0700", "PDT",  "Pacific Standard Time"],
+["-1000", "HST", "-0900", "HDT",  "Hawaii-Aleutian Standard Time"],
+["","","",""]];
+hX_3.STR_NUMBER_DECIMAL=".";
+hX_3.STR_NUMBER_THOUSANDS=",";
+hX_3.STR_NUMBER_CURRENCY="$";
+hX_3.ERR_datetime_parse_fail= "\"{0}\" cannot be interpreted as a date or time.";
+hX_3.ERR_epoch_name="\"{0}\" cannot be interpreted as a date. The epoch is not correct.";
+hX_3.ERR_day_name="\"{0}\" cannot be interpreted as a date. The day name is not correct.";
+hX_3.ERR_month_name="\"{0}\" cannot be interpreted as a date. The month name is not correct.";
+hX_3.ERR_month_range="\"{0}\" cannot be interpreted as a date. The month must be between 1 and 12.";
+hX_3.ERR_month_rangelimit="\"{0}\" cannot be interpreted as a date. {1} doesn't have {2} days.";
+hX_3.ERR_epoch_range="\"{0}\" cannot be interpreted as a date. Year is not correct for the Emperor."
+hX_3.ERR_hour_range_long="\"{0}\" cannot be interpreted as a time. The hour must be between 0 and 23.";
+hX_3.ERR_hour_range_short="\"{0}\" cannot be interpreted as a time. The hour must be between 1 and 12.";
+hX_3.ERR_minute_range="\"{0}\" cannot be interpreted as a time. Minutes must be between 0 and 59.";
+hX_3.ERR_second_range="\"{0}\" cannot be interpreted as a time. Seconds must be between 0 and 59.";
+hX_3.ERR_ampm_name="\"{0}\" cannot be interpreted as a time. The time must have an AM or PM indicator.";
+hX_3.ERR_tzone_name="\"{0}\" cannot be interpreted as a time. The time zone is not correct.";
+hX_3.ERR_empty="This value cannot be interpreted as no value was provided.";
+hX_3.ERR_minimum="The value provided is less than the minimum allowed.";
+hX_3.ERR_maximum="The value provided is greater than the maximum allowed.";
+hX_3.ERR_required="This value is required.";
+hX_3.ERR_constraint="This value cannot be intepreted.  The pattern of digits or alphabetic characters is not correct.";
+hX_3.ERR_number_fail="\"{0}\" cannot be interpreted as a number.";
+hX_3.ERR_number_char="\"{0}\" cannot be interpreted as a number. \"{1}\" is not a valid character.";
+if (hX_3)  hX_3.setResourceServer("/up/.ibmjsfres");
+</script>
+<script type="text/JavaScript" language="JavaScript">
+hX_3.onPageLoad();
+</script>
+	
+	
+	
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" language="JavaScript">
+document.title = 'Campus Life Assist System TUS'
+window.name = 'Header'
+
+/* 障害対応 UPEX-215 2008.11.17 Takemoto add Start						*/
+/* CSV指定が以下の条件以外はアラートでメッセージを表示し 				*/
+/* フォーカスをCSV指定パス入力欄に戻す。								*/
+/* 		条件1：'【半角アルファベット一文字】:\'の形式から始まるパス。	*/
+/* 		条件2：'\\'の形式で始まるパス。 								*/
+function comCsvPathCheck ( labelName , formId ) {
+	
+	// CSV指定入力欄の取得
+	id = document.getElementById( formId );
+
+	// CSV指定入力欄のがあれば入力チェック処理を行う
+	if( id != null){
+	
+		// パス指定入力値を取得
+		inputPath = document.getElementById( formId ).value;
+
+		if( inputPath != null && inputPath !='' ){
+			
+			errFlg = false;
+			str1 = inputPath.substring(1,3);			// 条件1との比較用文字列の取得
+			str2 = inputPath.substring(0,2);			// 条件2との比較用文字列の取得
+			
+			// 条件に一致しなければ、アラートで不正なパスである事を表示し、フォーカスを戻す
+			if( str1 == ':\\'){
+
+				regex = /[a-zA-Z]/; 					// 正規表現：アルファベット全て
+				strFirst = inputPath.substring(0,1);	// 先頭文字列を取得
+				
+				// アルファベットでなければエラー
+				if( strFirst.match(regex) == null){
+					errFlg = true;
+				}
+				
+			}else if( str2 != '\\\\' ){
+				errFlg = true;
+			}
+			
+			if( errFlg ){
+				alert( labelName + "に不正なパスが入力されています。\r\n内容を削除するか、「C:\\」又は「\\\\」の形式で始まるパスを入力してください。");				
+				document.getElementById( formId ).focus();
+				return false;
+			}
+		}
+
+	}
+	return true;
+
+}
+/* 障害対応 UPEX-215 2008.11.17 Takemoto add End*/
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<script language="JavaScript" src="/up/system/inc/gakuen.js"></script>
+<iframe id="kakusi" scrolling="no" frameborder="0" style="position:absolute; top:0px;left:0px; display:none" src="/up/system/inc/dummy.html"></iframe>
+<script type="text/javascript" language="JavaScript">
+//---------------------------- 
+// ダブルクリック防止
+//---------------------------- 
+function window_Load() {
+	// 全リンクのクリックイベントを submittableObject_Click で取得する。
+	for (var i = 0; i < document.links.length; i ++) {
+		var item = document.links[i]
+		Object.Aspect.around(item, "onclick", checkLoading);
+	}
+  
+	return true;
+}
+
+// 	抑止アスペクト
+var checkLoading = function(invocation) {
+	if (isDocumentLoading()) {
+		return false;
+	}
+	return invocation.proceed();
+}
+
+// 画面描画が終わったかどうか
+function isDocumentLoading() {
+	return (document.readyState != null &&
+		document.readyState != "complete");
+}
+
+// アスペクト用
+Object.Aspect = {
+	_around: function(target, methodName, aspect) {
+		var method = target[methodName];
+		target[methodName] = function() {
+			var invocation = {
+				"target" : this,
+				"method" : method,
+				"methodName" : methodName,
+				"arguments" : arguments,
+				"proceed" : function() {
+					if (!method) {
+						return true;
+					}
+					return method.apply(target, this.arguments);
+				}
+			};
+			return aspect.apply(null, [invocation]);
+		};
+	},
+	_after: function(target, methodName, aspect){
+		var method = target[methodName];
+        target[methodName] = function() {
+            var invocation = {
+                "target" : this, 
+                "method" : method,
+                "methodName" : methodName,
+                "arguments" : arguments
+            };
+            invocation["result"] = method.apply(target, arguments);
+            return aspect.apply(null, [invocation]);
+        };
+    },
+ 	around: function(target, methodName, aspect) {
+		this._around(target, methodName, aspect);
+	},
+	after: function(target, methodNames, aspect){
+		this._after(target, methodNames, aspect);
+    }
+	
+}
+//---------------------------- 
+// Submit先指定
+
+// (submit時にtargetを動的に切り替える)
+
+// ボタン二度押し対策
+//----------------------------
+var _target = "";
+function setTarget(t) {
+	_target = t;
+}
+var _control = true;
+function cancelSubmitCtrl() {
+	_control = false;
+}
+var submitFlug = true;
+for (var i = 0; i < document.forms.length; ++i) {
+    if(document.forms[i].onsubmit) continue;
+    
+    document.forms[i].onsubmit = function() {
+        try{
+        document.getElementById('form1').target = _target;
+        }catch(e){}
+        if(_target != "" || !_control) {
+            _target = "";
+            _control = true;
+            return true;
+        }
+        
+        document.body.style.cursor = "wait";
+        
+        if (!submitFlug){
+            return false;
+        } else {
+            
+            try {
+                if ( submitMethod() == false) {
+                    document.body.style.cursor = "default";
+                    return false;
+                }
+            } catch(e){}
+
+            submitFlug = false;
+            return true;
+        }
+    }
+}
+
+
+
+
+	function fwOnloadEvent() {
+	
+
+
+
+
+
+
+
+    
+
+	}
+
+	if(window.addEventListener) {
+		window.addEventListener('load', fwOnloadEvent, false);
+	}else{
+		window.attachEvent('onload', fwOnloadEvent);
+	}
+
+
+
+
+
+	
+
+
+
+
+</script>
+
+
+
+<script type="text/javascript" language="JavaScript">
+
+
+// 以下のイベントに処理を登録すると、RADの機能が正しく動作しない模様。
+// window.onload
+
+//---------------------------- 
+// モーダルウィンドウオープン
+//---------------------------- 
+var _modalWin;
+window.onfocus = null;
+function openModalWindow(pUrl, pName, pOption) {
+	_modalWin = openWindow(pUrl, pName, pOption);
+	_modalWin.focus();
+	window.onfocus = _modalCheck;
+}
+function _modalCheck(){
+	try{
+		if(_modalWin.closed){
+			window.onfocus = null;
+			_modalWin = null;
+		} else {
+			_modalWin.focus();
+		}
+	}catch(e){
+		window.onfocus = null;
+		_modalWin = null;	
+	}
+}
+
+//---------------------------- 
+// Ajax通信用
+//---------------------------- 
+function AjaxUtil() {
+}
+
+function getCodeName(servlet, target, code) {
+    var args = new Object();
+    args.code = code;
+    var ajaxUtil = new AjaxUtil();
+    ajaxUtil.getCodeName(servlet, target, args);
+}
+
+/**
+ * 複数の値を戻します
+ * callBackMethodを呼び出します
+ */
+AjaxUtil.prototype.getPluralValue = function (ajaxServlet, target, args) {
+	var engine = new AjaxEngine();
+	engine.setCallbackMethod(
+		function(value) {
+			try{
+				callBackMethod(value);
+			}catch(e){
+				// 実装のバグを警告する
+				alert('Ajaxの戻り関数『callBackMethod』を実装してください。');
+			}
+		}
+	);
+	engine.send(ajaxServlet, target, args);
+}
+
+/**
+ * 複数の値を戻します
+ * callBackMethodを呼び出します
+ */
+AjaxUtil.prototype.getPluralValueSetMethod = function (ajaxServlet, target, args, methodName) {
+	var engine = new AjaxEngine();
+	engine.setCallbackMethod(
+		function(value) {
+			try{
+				eval('('+ methodName +')(value)');
+			}catch(e){
+				alert(e);
+				// 実装のバグを警告する
+				alert('Ajaxの戻り関数『'+methodName+'』を実装してください。');
+			}
+		}
+	);
+	engine.send(ajaxServlet, target, args);
+}
+
+/**
+ * コードに対応する名称を取得します。
+ */
+AjaxUtil.prototype.getCodeName = function (ajaxServlet, target, args) {
+	var engine = new AjaxEngine();
+	engine.setCallbackMethod(
+		function(value) {
+			if (document.getElementById(target).nodeName == "SPAN"){
+				document.getElementById(target).innerHTML = value["name"];
+				document.getElementById(target).title = value["name"];
+			} else {
+				document.getElementById(target).value = value["name"];
+				document.getElementById(target).title = value["name"];
+			}
+		}
+	);
+	engine.send(ajaxServlet, target, args);
+}
+
+/**	
+ * セッションを消去後、子画面を開きます。
+ */	
+function removeSession(cls,url,name,opt) {
+	var ajaxUtil = new AjaxUtil();
+	ajaxUtil.removeSession(cls,url,name,opt);
+}
+
+/**	
+ * セッションを消去後、子画面を開きます。
+ */	
+AjaxUtil.prototype.removeSession = function (cls,url,name,opt) {
+	var ajaxServlet = "up/co/RemoveSessionAjax";
+	var args = new Object();
+		args.pcClass = cls;
+	var engine      = new AjaxEngine();
+	engine.setCallbackMethod(
+		function(value) {
+			var windowPointer = window.open(url,name,opt);
+			windowPointer.focus();
+		}
+	);
+	engine.send(ajaxServlet,null,args);
+}
+
+/**
+ * セレクトボックスの要素を置換します。
+ */
+AjaxUtil.prototype.replaceSelectboxItem = function (ajaxServlet, target, args) {
+	var engine = new AjaxEngine();
+	
+	engine.setCallbackMethod(
+		
+		function(value) {
+			listvalue = value["name"];
+			var targetSelectbox = document.getElementById(target);
+			if (listvalue == '' || listvalue == null) {
+				targetSelectbox.options.length = 0;
+			} else {
+				var itemList = listvalue.split("$@,@$");
+				targetSelectbox.options.length = itemList.length;
+				for (i = 0, max = itemList.length; i < max; i++) {
+					var rowItem = itemList[i].split('$@:@$');
+					targetSelectbox.options[i].value = rowItem[0];
+					targetSelectbox.options[i].text = rowItem[1];
+				}
+
+				// 先頭のデータを選択状態にする。
+				targetSelectbox.options[0].selected = true;
+				
+				// -> jquery mobile 対応
+				if((typeof jQuery) != "undefined"){
+					if((typeof $.mobile) != "undefined"){
+						$('select').selectmenu('refresh');
+					}
+				}
+				// <- jquery mobile 対応
+			}
+		}
+	);
+	engine.send(ajaxServlet, target, args);
+}
+
+//---------------------------------
+// 非同期通信実行部
+//---------------------------------
+
+/**
+ * コンストラクタ。
+ */
+function AjaxEngine() {
+	this.callbackMethod = null;
+}
+
+/**
+ * XmlHttpオブジェクトを取得する。
+ */
+AjaxEngine.prototype.getXmlHttp = function() {
+	var xmlHttp = null;
+    /*@cc_on
+    @if (@_jscript_version >= 5)
+        try {
+            xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
+        } catch (e) {
+            try {
+                xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+            } catch (E) {
+                xmlHttp = false;
+            }
+        }
+    @else
+        xmlHttp = false;
+    @end @*/
+    if (!xmlHttp && typeof XMLHttpRequest != 'undefined') {
+        try {
+            xmlHttp = new XMLHttpRequest();
+            xmlHttp.overrideMimeType("text/xml"); 
+        } catch (e) {
+            xmlHttp = false;
+        }
+    }
+	
+	return xmlHttp;
+}
+
+/**
+ * リクエストを送信する。
+ */
+AjaxEngine.prototype.send = function(ajaxServlet, target, args) {
+	
+	var params = '';
+	for (key in args) {
+		params += key + "=" + encodeURIComponent(args[key]) + "&";
+	}
+	params = params.substr(0, params.length -1);
+
+	// URLの組み立て
+	url = "/up/faces/ajax/" + ajaxServlet
+		+ "?target=" + target 
+		+ "&windowName=" + window.name
+		+ "&" + params;
+
+	// XmlHttpオブジェクトの取得
+	var xmlHttp = this.getXmlHttp();
+	if (xmlHttp) {
+		var callback = this.callbackMethod;
+		xmlHttp.onreadystatechange = function() {
+		    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+		        var xmlDoc = xmlHttp.responseXML;
+		        if (xmlDoc.documentElement) {
+		            var child  = xmlDoc.getElementsByTagName('value').item(0).childNodes;
+					var value = new Object();
+					for (i=0;i<child.length;i++)
+					{
+						if (child.item(i).childNodes.length != 0){
+							value[child.item(i).nodeName] = child.item(i).childNodes[0].nodeValue;
+						} else {
+							value[child.item(i).nodeName] = "";
+						}
+					}
+					// コールバックメソッドを実行
+					if (callback) {
+						callback(value);
+					}
+		        }
+			}
+		}
+	}
+	// リクエスト送信
+	xmlHttp.open('GET', url, true);
+	xmlHttp.send(null);
+}
+
+/**
+ * コールバックメソッドを設定する
+ */
+AjaxEngine.prototype.setCallbackMethod = function (handler) {
+	this.callbackMethod = handler;
+}
+
+
+
+
+
+
+try{
+document.getElementById("form1").onkeydown  = customOnKeyDown;
+}catch(e){}
+function customOnKeyDown(e){
+    if (document.all) {  // IE
+        if (event.keyCode==13){
+            if(window.event.srcElement.type == null ||
+               (window.event.srcElement.type.toUpperCase() !='SUBMIT' && 
+               window.event.srcElement.type.toUpperCase() !='TEXTAREA' &&
+               window.event.srcElement.type.toUpperCase() !='BUTTON' &&
+               window.event.srcElement.type.toUpperCase() !='IMAGE' &&
+               window.event.srcElement.tagName.toUpperCase() !='A')){
+               return false;
+            }
+        }
+        
+        if(((event.altKey) && (event.keyCode==37))) {
+            event.returnValue = false;
+            false;
+        }
+        
+        if(window.event.srcElement.type == null ||
+           (window.event.srcElement.type.toUpperCase() !='TEXT' && 
+            window.event.srcElement.type.toUpperCase() !='TEXTAREA' &&
+            window.event.srcElement.type.toUpperCase() !='FILE' &&
+            window.event.srcElement.type.toUpperCase() !='PASSWORD')){
+            if((event.keyCode==8)) {
+                event.returnValue = false;
+                false;
+            }
+        }
+    } else { // 以外
+        if (e.keyCode==13){
+            if(e.target.type == null ||
+               (e.target.type.toUpperCase() !='SUBMIT' && 
+               e.target.type.toUpperCase() !='TEXTAREA' &&
+               e.target.type.toUpperCase() !='BUTTON' &&
+               e.target.type.toUpperCase() !='IMAGE' &&
+               e.target.tagName.toUpperCase() !='A')){
+               return false;
+            }
+        }
+    }
+}
+window.document.onkeydown = F5KeyDown;
+function F5KeyDown(k){
+	try {
+	    if (document.all) {  // IE
+			if (event.keyCode == 116) {
+				event.keyCode = null;
+				return false;
+			}
+			if (event.ctrlKey && event.keyCode == 82) {
+				event.keyCode = null;
+				return false;
+			}
+		} else {
+			if (k.keyCode == 116) {
+				k.keyCode = null;
+				return false;
+			}
+			if (k.ctrlKey && k.keyCode == 82) {
+				k.keyCode = null;
+				return false;
+			}
+		}
+	}catch(e){
+		return false;
+	}
+}
+
+// IEで画面を閉じるときにでる確認メッセージを抑制
+if (!window.opener) {
+    if (typeof document.body.style.maxHeight != "undefined") {
+        // IE7
+        window.open('','_parent','');
+    } else {
+        // IE6
+        window.opener = "_dummy";
+    }    
+}
+
+
+
+try{
+	window_Load();
+	onLoad();
+}catch(e){}
+
+</script>
+
+
+
+
+
+
+<script language="JavaScript">
+	/*
+	 * セレクトボックスの内容を置換
+
+	 */
+	function replaceSelectboxItem(servletName, target, args) {
+		
+		if (args['pcClass'] == null) {
+			// pcが指定されていない場合は、現在の画面に紐付くPageCodeをセットする。
+
+			args['pcClass'] = 'com.jast.gakuen.up.inc.Header'; 
+		}
+		
+		var util = new AjaxUtil();
+		util.replaceSelectboxItem(servletName, target, args);
+	}
+</script>
+
+
+
+
+
+
+
+<script language="JavaScript">
+
+/**
+ * 実行確認ダイアログを表示する。
+
+ */
+function confirmExecute() {
+	return window.confirm("実行してもよろしいですか？");
+}
+
+/**
+ * データ破棄確認ダイアログを表示する。
+
+ */
+function confirmMove() {
+	if (changeMonitor.isChanged()) {
+		return window.confirm("編集中のデータが確定されていません。編集中のデータを無効にしてもよろしいですか？");
+	} else {
+		return true;
+	}
+}
+
+/**
+ * 画面クローズ確認ダイアログを表示する。
+
+ */
+function confirmClose() {
+	return window.confirm("画面を閉じてもよろしいですか？");
+}
+
+/**
+ * 印刷確認ダイアログを表示する。
+
+ */
+function confirmPrint() {
+	return window.confirm("印刷してよろしいですか？");
+}
+
+/**
+ * クリア確認ダイアログを表示する。
+
+ */
+function confirmClear() {
+	return window.confirm("クリアしてもよろしいですか？");
+}
+
+/**
+ * 初期化確認ダイアログを表示する。
+
+ */
+function confirmInit() {
+	return window.confirm("初期値に戻してもよろしいですか？");
+}
+
+/**
+ * コピー確認ダイアログを表示する。
+
+ */
+function confirmCopy() {
+	return window.confirm("コピー先のデータは削除されます。コピーしてもよろしいですか？");
+}
+
+/**
+ * 登録確認ダイアログを表示する。
+ */
+function confirmRegist() {
+	return window.confirm("登録してもよろしいですか？");
+}
+
+/**
+ * 更新確認ダイアログを表示する。
+ */
+function confirmUpdate(itemArray) {
+	if (isKeyChange(itemArray)) {
+		return window.confirm("キー項目が変更されています。確定してよろしいですか？");
+	} else {
+		return window.confirm("更新してもよろしいですか？");
+	}
+}
+
+/**
+ * 削除確認ダイアログを表示する。
+ */
+function confirmDelete(itemArray) {
+	if (isKeyChange(itemArray)) {
+		return window.confirm("キー項目が変更されています。削除してよろしいですか？");
+	} else {
+		return window.confirm("削除してもよろしいですか？");
+	}
+}
+
+/**
+ * 選択項目の削除確認ダイアログを表示する。
+ */
+function confirmMultipleDelete() {
+	return window.confirm("削除してもよろしいですか？");
+}
+
+/**
+ * CSV出力確認ダイアログを表示する。
+
+ */
+function confirmCSVOutput() {
+	return window.confirm("ＣＳＶを作成してよろしいですか？");
+}
+
+/**
+ * ダウンロード確認ダイアログを表示する。
+
+ */
+function confirmDownload() {
+	return window.confirm("ファイルのダウンロードを開始してもよろしいですか？");
+}
+
+
+/**
+ * キー変更の確認
+ */
+function isKeyChange(itemArray) {
+	// キー項目数が0, 奇数の場合は呼び出しもとのバグ
+	if (itemArray.length == 0 || (itemArray.length % 2) == 1) {
+		throw 'InvalidArgumentException';
+	}
+
+	for (i = itemArray.length -1; i >= 0; i-=2) {
+		// itemArray[i] != itemArray[i-1] なら変更あり
+		var current = document.getElementById(itemArray[i-1]).value;
+		var old = document.getElementById(itemArray[i]).value;
+		
+		if (current != old) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * 名称入力欄のIME切り替え（カナ、漢字、英字）
+
+ */
+function changeIMEMode(targetId, value) {
+	// 値に応じてIMEモードを切り替える
+	// 最終的には定数クラスを利用することになる。
+
+	var mode;
+	if (value == 0 || value == 1) {
+		// IME On
+		mode = "active";
+	} else {
+		// IME Off
+		mode ="disabled";
+	}
+	var obj = document.getElementById(targetId);
+	obj.style.imeMode = mode;
+}
+</script>
+
+
+<script language="JavaScript">
+function OnChangeMonitor() {
+}
+
+var valueChangeObj = null;
+var hasInputErrorObj = null;
+
+OnChangeMonitor.prototype.init = function(valueChangeObjId, hasInputErrorObjId) {
+	valueChangeObj = document.getElementById(valueChangeObjId);
+	hasInputErrorObj = document.getElementById(hasInputErrorObjId);
+	
+	screenValueChangeFlg = false;
+
+	var objList = document.getElementsByTagName("input");
+	var targetList = new Array();
+
+	// inputより、 text, password, file, checkbox, radioのみを抽出
+	for (i = 0; i < objList.length; i++) {
+		if (objList[i].type == 'text' ||
+			objList[i].type == 'password' ||
+			objList[i].type == 'file' ||
+			objList[i].type == 'checkbox' ||
+			objList[i].type == 'radio') {
+
+			targetList[targetList.length] = objList[i];
+		}
+	}
+
+	// select
+	objList = document.getElementsByTagName("select");
+	if (!objList.empty) {
+		for (i = 0; i < objList.length; i++) {
+			targetList[targetList.length] = objList[i];
+		}
+	}
+
+	// textarea
+	objList = document.getElementsByTagName("textarea");
+	if (!objList.empty) {
+		for (i = 0; i < objList.length; i++) {
+			targetList[targetList.length] = objList[i];
+		}
+	}
+
+	for (i = 0; i < targetList.length; i++) {
+		var item = targetList[i];
+		try {
+			item.addEventListener('change', changeMonitor.changed, true);
+		} catch (e) {
+			// addEventListenerが利用できない場合
+
+			item.attachEvent('onchange', changeMonitor.changed);
+		}
+	}
+}
+
+/**
+ * 値の変更が発生したことを通知する。
+
+ */
+OnChangeMonitor.prototype.changed = function() {
+	valueChangeObj.value = true;
+}
+
+/**
+ * 内部状態を初期化する。
+
+ */
+OnChangeMonitor.prototype.clear = function() {
+	
+	valueChangeObj.value = false;
+}
+
+/**
+ * 値が変更されている場合 true;
+ */
+OnChangeMonitor.prototype.isChanged = function() {
+	// valueChangeObj == trueなら無条件にダイアログを表示
+	var result = !(valueChangeObj.value == "" || valueChangeObj.value == 'false');
+	
+	// valueChangeObj != trueでもhasInputError == true ならダイアログを表示する。
+
+	// hasInputErrorが発生したということは、入力値を変更している。
+
+	result = result || (hasInputErrorObj.value == 'true');
+	return result;
+}
+
+/**
+ * パラメータに該当するidをもつコンポーネントのchangeMonitorを除去する。
+
+ */
+OnChangeMonitor.prototype.removeById = function(removeId) {
+	if (document.getElementById("form1:" + removeId)) {
+		var rmvElm = document.getElementById("form1:" + removeId);
+		try {
+			rmvElm.removeEventListener("change", changeMonitor.changed, true);
+		} catch (e) {
+		
+			// removeEventListenerが利用できない場合
+
+			rmvElm.detachEvent("onchange", changeMonitor.changed);
+		}
+	} 
+}
+
+
+/**
+ * パラメータに該当するnameをもつコンポーネントのchangeMonitorを除去する。
+
+ */
+OnChangeMonitor.prototype.removeByName = function(removeName) {
+	if (document.getElementsByName("form1:" + removeName)) {
+		var rmvTarget = "form1:" + removeName;
+		var rmvElms = document.getElementsByName(rmvTarget);
+
+		// 目的のコンポーネント格納用配列
+　　　　var rmvArray = new Array();
+		// IEのgetElementsByNameのバグ用にname属性が目的のもののみ取得
+
+		for (var i = 0; i < rmvElms.length; i++) {
+			if (rmvElms[i].name == rmvTarget) {
+				rmvArray[rmvArray.length] = rmvElms[i];
+			}
+		}
+
+		for (var i = 0; i < rmvArray.length; i++) {
+			try {
+				rmvArray[i].removeEventListener("change", changeMonitor.changed, true);
+			} catch (e) {
+			
+				// removeEventListenerが利用できない場合
+
+				rmvArray[i].detachEvent("onchange", changeMonitor.changed);
+			}
+		}
+	}
+}
+
+
+</script>
+
+
+</body></html>
