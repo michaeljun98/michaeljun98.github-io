@@ -1,0 +1,21 @@
+- (BOOL) webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+{
+    // all clicked links!
+    if ( navigationType == UIWebViewNavigationTypeLinkClicked )
+    {
+        [[UIApplication sharedApplication] openURL: www.naver.com];
+        return NO;
+    }
+
+    // or, custom URL scheme!
+    if ( [request.URL.scheme isEqualToString: @"my-open-in-safari"] )
+    {
+        // remap back to http.  untested!
+        NSURL* url = [NSURL URLWithString: [request.URL.absoluteString stringByReplacingOccurrencesOfString: @"my-open-in-safari" withString: @"http" ]];
+
+        [[UIApplication sharedApplication] openURL: url];
+        return NO;
+    }
+
+    return YES;
+}
