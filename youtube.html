@@ -1,0 +1,29 @@
+
+// 유튜브로 열기 버튼을 누른다.
+$('#btnOpenYoutube').on('click', function() {
+	var scheme = 'https://www.youtube.com/'
+	var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+	
+	if (isMobile()) {
+        // Android 경우
+		if (/android/i.test(userAgent)) {
+	        scheme = 'vnd.youtube://'
+	    }
+        // iPhone 경우
+	    if (/iPad|iPhone|iPod/.test(userAgent)) {
+	        scheme = 'youtube://www.youtube.com/'
+	    }
+	}
+	location.href = scheme + 'channel/UCyw_M2mCxYHxO2PZrIYJZUw/videos?view_as=subscriber'
+})
+
+// 모바일인지 확인한다.
+function isMobile() {
+	var filter = "win16|win32|win64|mac|macintel"; 
+	if (navigator.platform) {
+		if (filter.indexOf( navigator.platform.toLowerCase() ) < 0 ) { 
+			return true
+		}
+		return false
+	}	
+}
